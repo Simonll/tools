@@ -25,8 +25,11 @@ def compute_dinuc(puz):
             Nsite_nuc = line.split(" ")[-1].strip()
 
     Nsp = 0
-    dinuc = dinuc12 = dinuc23 = dinuc31 = np.zeros((4,4))
-    dinuc12 
+    dinuc = np.zeros((4,4))
+    dinuc12 = np.zeros((4,4))
+    dinuc23 = np.zeros((4,4))
+    dinuc31 = np.zeros((4,4))
+    
     for line_clean in lines_clean:
         line_clean = line_clean.strip()
         Nsp += 1

@@ -26,57 +26,7 @@ Nparam = len(sys.argv)
 
 def readChainMSAA(pathtochain,index):
 
-    chaintoread = open(pathtochain, "r")
-    lines = chaintoread.readlines()
-    chaintoread.close()
-    print("path to chain " , pathtochain, " iteration to recover ", index, "number of lines in chain file ",  len(lines))
-
-    pt= 0
-    k = 0
-    brack = 0
-    start = 0
-    end = 0
-    a = True
-    b = 0
-    new_start = 0
-    old_start = 0
-    step =  0
-
-    for line in lines:
-        #print(pt)
-        if (line.startswith("(") and brack == 0 and pt == index):
-            start = k
-            brack = 1
-
-        if (line.startswith("(") and brack == 1 and pt == index+1):
-            end = k
-
-        if end != 0 :
-            break
-
-        if (line.startswith("(")):
-            pt+= 1
-
-        if (line.startswith("(") and k != 0 and a == True):
-            step = k
-            a = False
-            print("expected step size (base on first iteration) : ", step)
-            print("only inconsitent iterations will be shown")
-
-        if (line.startswith("(") and pt > 1):
-            old_start = new_start
-            new_start = k
-            if (step != (new_start-old_start)):
-                print("inconsitent chain ","pt ",pt," expected step size ", step," new step size " ,new_start-old_start, " start ", old_start, " end ",new_start)
-
-
-        k+=1
-
-    if(pt < index):
-        print("faulty chain")
-        sys.exit(0)
-
-    lines = lines[start:end]
+    lines = linesParser(pathtochain,index)
 
     ssaaprofiles = None #np.matrix
     allocations = None #np.array
@@ -123,23 +73,21 @@ def readChainMSAA(pathtochain,index):
     dic["ssaaprofiles"] = ssaaprofiles
     dic["allocations"] = allocations
     return dic
-
-def readChainMS(pathtochain,index):
-
+def  linesParser(pathtochain,index):
     chaintoread = open(pathtochain, "r")
     lines = chaintoread.readlines()
     chaintoread.close()
-    print("path to chain " , pathtochain, " iteration to recover ", index, "number of lines in chain file ",  len(lines))
 
-    pt= 0
-    k = 0
+    print("path to chain " , pathtochain, " iteration to recover ", index, "number of lines in chain file ",  len(lines))
+    pt= 1
+    k = 1
     brack = 0
-    start = 0
-    end = 0
+    start = 1
+    end = 1
     a = True
-    b = 0
-    new_start = 0
-    old_start = 0
+    #b = 0
+    new_start = 1
+    old_start = 1
     step =  0
 
     for line in lines:
@@ -148,20 +96,19 @@ def readChainMS(pathtochain,index):
             start = k
             brack = 1
 
-        if (line.startswith("(") and brack == 1 and pt == index+1):
-            end = k
-
-        if end != 0 :
-            break
-
-        if (line.startswith("(")):
-            pt+= 1
-
-        if (line.startswith("(") and k != 0 and a == True):
-            step = k
+        #if (line.startswith("(") and brack == 1 and pt == index+1):
+        #    end = k
+        if (line.startswith("(") and k > 1 and a == True):
+            step = k-1
             a = False
             print("expected step size (base on first iteration) : ", step)
             print("only inconsitent iterations will be shown")
+
+        #if end != 1 :
+        #    break
+
+        if (line.startswith("(")):
+            pt+= 1
 
         if (line.startswith("(") and pt > 1):
             old_start = new_start
@@ -173,10 +120,16 @@ def readChainMS(pathtochain,index):
         k+=1
 
     if(pt < index):
+        print(pt, index)
         print("faulty chain")
         sys.exit(0)
 
-    lines = lines[start:end]
+    return lines[start-1:start-1+step]
+
+
+def readChainMS(pathtochain,index):
+
+    lines = linesParser(pathtochain,index)
 
     ssaaprofiles = None #np.matrix
     allocations = None #np.array
@@ -194,11 +147,12 @@ def readChainMS(pathtochain,index):
     omega = float(lines[9])
     #L10 = lines[10]
     Nsite_codon = int(lines[10])
-    L12 = np.array(lines[11].strip().split("\t"),dtype=float)
-    L13 = lines[12]
+    L11 = np.array(lines[11].strip().split("\t"),dtype=float)
+    L12 = lines[12]
     ssaaprofiles_list = np.array(lines[13].strip().split("\t"),dtype=float)
     allocations =  np.array(lines[14].strip().split("\t"),dtype=float)
     param = ["tree","tl","nucp","nucrr","codonprofile","omega","Nsite_nuc","ssaaprofiles","allocations","iter"]
+
     dic = {}
     dic["iter"] = lines
     dic["tl"] = tl
@@ -214,8 +168,8 @@ def readChainMS(pathtochain,index):
     dic["omega"] = omega
     #dic["L10"] = L10
     dic["Nsite_codon"] = Nsite_codon
+    dic["L11"] = L11
     dic["L12"] = L12
-    dic["L13"] = L13
     dic["ssaaprofiles"] = ssaaprofiles
     dic["allocations"] = allocations
     return dic
@@ -230,10 +184,19 @@ def extrac_treelenght(tree):
 
 if __name__ == '__main__':
 
+
+    print("model ",model)
+    print("inputfile ",inputfile)
+    print("index ",index)
+    print("outputfile ",outputfile)
+    print("param ",param)
+    print("Nparam ",Nparam)
+
+
     pathtochain = inputfile + ".chain"
     print(model,pathtochain,index)
-    dic =  {}
-    if (model = "MSAA") :
+    dic = {}
+    if (model == "MSAA") :
         dic = readChainMSAA(pathtochain,index)
     elif (model == "MS") :
         dic = readChainMS(pathtochain,index)

@@ -233,7 +233,7 @@ if __name__ == '__main__':
     pathtochain = inputfile + ".chain"
     print(model,pathtochain,index)
     dic =  {}
-    if (model = "MSAA") :
+    if (model == "MSAA") :
         dic = readChainMSAA(pathtochain,index)
     elif (model == "MS") :
         dic = readChainMS(pathtochain,index)
